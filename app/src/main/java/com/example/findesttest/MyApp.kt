@@ -1,6 +1,7 @@
 package com.example.findesttest
 
 import android.app.Application
+import com.example.findesttest.di.databaseModule
 import com.example.findesttest.di.networkModule
 import com.example.findesttest.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
@@ -17,7 +18,8 @@ class MyApp: Application() {
 
             modules(
                 networkModule,
-                viewModelModule
+                viewModelModule,
+                databaseModule
             )
         }
     }

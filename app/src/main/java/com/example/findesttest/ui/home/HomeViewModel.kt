@@ -16,9 +16,9 @@ class HomeViewModel(private val productRepository: ProductRepository) : ViewMode
 
     private val _categoriesState = MutableStateFlow<UiState<List<String>>>(UiState.Loading)
     val categoriesState: StateFlow<UiState<List<String>>> = _categoriesState
+    private var currentCategory: String? = null
 
     private val _selectedCategory = MutableStateFlow<String?>(null)
-    val selectedCategory: StateFlow<String?> = _selectedCategory
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -28,7 +28,7 @@ class HomeViewModel(private val productRepository: ProductRepository) : ViewMode
         loadCategories()
     }
 
-    fun loadProducts(category: String? = null) {
+    private fun loadProducts(category: String? = null) {
         viewModelScope.launch {
             _productState.value = UiState.Loading
             try {
@@ -59,9 +59,18 @@ class HomeViewModel(private val productRepository: ProductRepository) : ViewMode
         }
     }
 
+
+
     fun onCategorySelected(category: String?) {
-        _selectedCategory.value = category
-        loadProducts(category)
+        if (currentCategory == category) {
+            currentCategory = null
+            _selectedCategory.value = null
+            loadProducts(null)
+        } else {
+            currentCategory = category
+            _selectedCategory.value = category
+            loadProducts(category)
+        }
     }
 
     fun onSearchQueryChanged(query: String) {

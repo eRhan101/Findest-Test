@@ -32,6 +32,6 @@ val networkModule = module {
         get<Retrofit>().create(ProductApiService::class.java)
     }
     single<ProductRepository> {
-        ProductRepositoryImpl(get())
+        ProductRepositoryImpl(get(), get())
     }
 }
