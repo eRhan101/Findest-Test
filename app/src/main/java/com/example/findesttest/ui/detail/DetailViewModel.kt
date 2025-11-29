@@ -3,25 +3,49 @@ package com.example.findesttest.ui.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.findesttest.data.model.ProductDto
+import com.example.findesttest.data.repository.CartRepository
 import com.example.findesttest.data.repository.ProductRepository
 import com.example.findesttest.utils.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-class DetailViewModel(private val productRepository: ProductRepository) : ViewModel() {
+class DetailViewModel(
+    private val productRepository: ProductRepository,
+    private val cartRepository: CartRepository
+) : ViewModel() {
 
     private val _detailState = MutableStateFlow<UiState<ProductDto>>(UiState.Loading)
     val detailState: StateFlow<UiState<ProductDto>> = _detailState
 
-    fun loadProductDetail(id: Int){
+    private val _addToCartState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
+    val addToCartState: StateFlow<UiState<Boolean>> = _addToCartState
+
+
+    fun loadProductDetail(id: Int) {
         viewModelScope.launch {
             _detailState.value = UiState.Loading
+            val product = productRepository.getProductsbyId(id)
+            product
+                .catch { e ->
+                    _detailState.value =
+                        UiState.Error(e.message ?: "Failed to Load Product", throwable = e)
+                }
+                .collect {
+                    _detailState.value = UiState.Success(it)
+                }
+        }
+    }
+
+    fun addToCart(product: ProductDto){
+        viewModelScope.launch {
             try {
-                val product = productRepository.getProductsbyId(id)
-                _detailState.value = UiState.Success(product)
-            } catch (e: Exception) {
-                _detailState.value = UiState.Error(e.message ?: "Failed to Load Product", throwable = e)
+                cartRepository.addToCart(product)
+                _addToCartState.value = UiState.Success(true)
+                _addToCartState.value = UiState.Loading
+            } catch (e: Exception){
+                _addToCartState.value = UiState.Error(e.message ?: "Failed to add to cart", e)
             }
         }
     }

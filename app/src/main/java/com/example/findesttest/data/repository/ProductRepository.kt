@@ -1,10 +1,12 @@
 package com.example.findesttest.data.repository
 
 import com.example.findesttest.data.model.ProductDto
+import kotlinx.coroutines.flow.Flow
 
 interface ProductRepository {
-    suspend fun getProducts(): List<ProductDto>
-    suspend fun getProductsbyId(id: Int): ProductDto
-    suspend fun getCategories(): List<String>
-    suspend fun getProductbyCategory(category: String): List<ProductDto>
+    suspend fun getProducts(): Flow<List<ProductDto>>
+    suspend fun getProductsbyId(id: Int): Flow<ProductDto>
+    suspend fun getCategories(): Flow<List<String>>
+    suspend fun getProductbyCategory(category: String): Flow<List<ProductDto>>
+
 }

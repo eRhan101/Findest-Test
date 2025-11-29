@@ -1,31 +1,58 @@
 package com.example.findesttest.ui.order
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.findesttest.R
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.findesttest.databinding.FragmentOrderBinding
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class OrderFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = OrderFragment()
-    }
+    private var _binding: FragmentOrderBinding? = null
+    private val binding get() = _binding!!
 
-    private val viewModel: OrderViewModel by viewModels()
+    private val viewModel: OrderViewModel by viewModel()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // TODO: Use the ViewModel
-    }
+    private lateinit var adapter: OrderAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_order, container, false)
+        _binding = FragmentOrderBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupRecyclerView()
+        observeData()
+    }
+
+    private fun setupRecyclerView() {
+        adapter = OrderAdapter()
+        binding.rvOrders.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = this@OrderFragment.adapter
+        }
+    }
+
+    private fun observeData() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.orders.collect { orderList ->
+                adapter.submitList(orderList)
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

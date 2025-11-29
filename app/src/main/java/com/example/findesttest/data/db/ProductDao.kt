@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductDao {
@@ -12,17 +13,17 @@ interface ProductDao {
     suspend fun insertAll(products: List<ProductEntity>)
 
     @Query("SELECT * FROM products")
-    suspend fun getAllProducts(): List<ProductEntity>
+    fun getAllProducts(): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM products WHERE category = :category")
-    fun getProductsByCategory(category: String): List<ProductEntity>
+    fun getProductsByCategory(category: String): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM products WHERE id = :id")
-    suspend fun getProductById(id: Int): ProductEntity?
+    fun getProductById(id: Int): Flow<ProductEntity?>
 
     @Query("DELETE FROM products")
     suspend fun clearAll()
 
-    @Query ("SELECT DISTINCT category FROM products ORDER BY category ASC")
-    suspend fun getUniqueCategories(): List<String>
+    @Query("SELECT DISTINCT category FROM products ORDER BY category ASC")
+    fun getUniqueCategories(): Flow<List<String>>
 }

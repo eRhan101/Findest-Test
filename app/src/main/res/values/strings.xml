@@ -7,6 +7,10 @@
     <string name="product_image_description">Product Image</string>
     <string name="add_to_cart_btn">Add To Cart</string>
     <string name="tv_error">Something went wrong</string>
+    <string name="order_history">Order History</string>
+    <string name="delivery_address">Delivery Address</string>
+    <string name="home">Home</string>
+    <string name="adress">Jalan Melati Indah No. 27, RT 04/RW 02, Kel. Sukamaju, Kec. Lowokwaru, Kota Malang, Jawa Timur 65141</string>
 
 
 </resources>

@@ -28,7 +28,7 @@ class ProductAdapter(
         fun bind(item: ProductDto) {
             binding.tvProductName.text = item.title
             binding.tvCategories.text = item.category
-            binding.tvPrice.text = "${item.price}$"
+            binding.tvPrice.text = "$${item.price}"
 
             binding.ivProductImage.load(item.image) {
                 crossfade(true)

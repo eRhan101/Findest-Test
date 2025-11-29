@@ -25,12 +25,20 @@
         android:id="@+id/nav_cart"
         android:name="com.example.findesttest.ui.cart.CartFragment"
         android:label="fragment_cart"
-        tools:layout="@layout/fragment_cart" />
+        tools:layout="@layout/fragment_cart" >
+        <action
+            android:id="@+id/action_nav_cart_to_checkoutFragment"
+            app:destination="@id/checkoutFragment" />
+    </fragment>
     <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.findesttest.ui.profile.ProfileFragment"
         android:label="fragment_profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_nav_profile_to_nav_order"
+            app:destination="@id/nav_order" />
+    </fragment>
     <fragment
         android:id="@+id/nav_detail"
         android:name="com.example.findesttest.ui.detail.DetailFragment"
@@ -40,5 +48,14 @@
             android:name="productId"
             app:argType="integer"/>
     </fragment>
+    <fragment
+        android:id="@+id/checkoutFragment"
+        android:name="com.example.findesttest.ui.checkout.CheckoutFragment"
+        android:label="CheckoutFragment" >
+        <action
+            android:id="@+id/action_checkoutFragment_to_nav_home"
+            app:destination="@id/nav_home" />
+    </fragment>
+
 
 </navigation>

@@ -26,6 +26,10 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         binding.bottomNavView.setupWithNavController(navController)
 
+        binding.bottomNavView.setOnItemReselectedListener {
+            navController.popBackStack(it.itemId, false)
+        }
+
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.nav_home, R.id.nav_cart, R.id.nav_profile, R.id.nav_order -> {
@@ -35,6 +39,9 @@ class MainActivity : AppCompatActivity() {
                 else -> {
                     binding.bottomNavView.visibility = View.GONE
                 }
+            }
+            if (destination.id == R.id.nav_order){
+                binding.bottomNavView.menu.findItem(R.id.nav_profile).isChecked = true
             }
         }
 

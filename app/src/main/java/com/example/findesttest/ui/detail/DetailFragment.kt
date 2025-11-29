@@ -48,25 +48,30 @@ class DetailFragment : Fragment() {
             findNavController().popBackStack()
         }
         binding.btnAddToCart.setOnClickListener {
-            Toast.makeText(requireContext(), "Add to cart", Toast.LENGTH_SHORT).show()
+            val currentState = viewModel.detailState.value
+            if (currentState is UiState.Success) {
+                viewModel.addToCart(currentState.data)
+                Toast.makeText(requireContext(), "Added to cart", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     private fun observeObjects() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.detailState .collect{ state ->
-                    when(state){
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.detailState.collect { state ->
+                    when (state) {
                         is UiState.Loading -> {
                             binding.progressBar.visibility = View.VISIBLE
                             binding.tvError.visibility = View.GONE
-                            binding.nestedScrollView.visibility=View.GONE
+                            binding.nestedScrollView.visibility = View.GONE
                             binding.btnAddToCart.visibility = View.GONE
                         }
+
                         is UiState.Success -> {
                             binding.progressBar.visibility = View.GONE
                             binding.tvError.visibility = View.GONE
-                            binding.nestedScrollView.visibility=View.VISIBLE
+                            binding.nestedScrollView.visibility = View.VISIBLE
                             binding.btnAddToCart.visibility = View.VISIBLE
 
                             val product = state.data
@@ -75,15 +80,16 @@ class DetailFragment : Fragment() {
                             binding.tvDetailPrice.text = "${product.price}$"
                             binding.tvDetailDescription.text = product.description
 
-                            binding.ivDetailImage.load(product.image){
+                            binding.ivDetailImage.load(product.image) {
                                 crossfade(true)
                             }
                         }
+
                         is UiState.Error -> {
                             binding.progressBar.visibility = View.GONE
                             binding.tvError.visibility = View.VISIBLE
                             binding.tvError.text = state.message
-                            binding.nestedScrollView.visibility=View.GONE
+                            binding.nestedScrollView.visibility = View.GONE
                             binding.btnAddToCart.visibility = View.GONE
                         }
 

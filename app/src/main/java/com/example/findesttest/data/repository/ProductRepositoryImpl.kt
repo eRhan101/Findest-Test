@@ -6,70 +6,37 @@ import com.example.findesttest.data.db.ProductEntity
 import com.example.findesttest.data.model.ProductDto
 import com.example.findesttest.data.model.RatingDto
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 
 class ProductRepositoryImpl(
     private val apiService: ProductApiService,
     private val productDao: ProductDao
 ) : ProductRepository {
-    override suspend fun getProducts(): List<ProductDto> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val apiProducts = apiService.getProducts()
-                val entities = apiProducts.map { it.toEntity() }
-                productDao.insertAll(entities)
-            } catch (e: Exception) {
-                e.printStackTrace()
+
+    override suspend fun getProducts(): Flow<List<ProductDto>> {
+        return productDao.getAllProducts()
+            .map { entities -> entities.map { it.toDto() } }
+            .onStart {
+                saveApiDataToDb()
             }
-            val dbProducts = productDao.getAllProducts()
-            dbProducts.map { it.toDto() }
-        }
     }
 
-    override suspend fun getProductsbyId(id: Int): ProductDto {
-        return withContext(Dispatchers.IO) {
-            val dbProduct = productDao.getProductById(id)
-
-            if (dbProduct != null) {
-                return@withContext dbProduct.toDto()
-            }
-
-            val apiProduct = apiService.getProductsbyId(id)
-            apiProduct
-        }
-
+    override suspend fun getProductsbyId(id: Int): Flow<ProductDto> {
+        return productDao.getProductById(id)
+            .map { entity -> entity?.toDto()!! }
     }
 
-    override suspend fun getCategories(): List<String> {
-        return withContext(Dispatchers.IO) {
-            try {
-                apiService.getCategories()
-            } catch (e: Exception) {
-                productDao.getUniqueCategories()
-            }
-        }
-
+    override suspend fun getCategories(): Flow<List<String>> {
+        return productDao.getUniqueCategories()
     }
 
-    override suspend fun getProductbyCategory(category: String): List<ProductDto> {
-        return withContext(Dispatchers.IO) {
-            val localProducts = productDao.getProductsByCategory(category)
-
-            if (localProducts.isNotEmpty()) {
-                return@withContext localProducts.map { it.toDto() }
-            }
-
-            try {
-                val apiProducts = apiService.getProductbyCategory(category)
-                val entities = apiProducts.map { it.toEntity() }
-                productDao.insertAll(entities)
-
-                return@withContext apiProducts
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
-            }
-        }
+    override suspend fun getProductbyCategory(category: String): Flow<List<ProductDto>> {
+        return productDao.getProductsByCategory(category)
+            .map { entities -> entities.map { it.toDto() } }
     }
 
     private fun ProductDto.toEntity(): ProductEntity {
@@ -95,6 +62,16 @@ class ProductRepositoryImpl(
             image = this.image,
             rating = RatingDto(this.ratingRate, this.ratingCount)
         )
+    }
+
+    private suspend fun saveApiDataToDb() {
+        try {
+            val apiProducts = apiService.getProducts()
+            val entities = apiProducts.map { it.toEntity() }
+            productDao.insertAll(entities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 

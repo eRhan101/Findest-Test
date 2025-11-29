@@ -44,8 +44,8 @@ class HomeFragment : Fragment() {
             val action = HomeFragmentDirections.actionNavHomeToNavDetail(productId = it.id)
             findNavController().navigate(action)
         }, onAddToCartClick = {
-            //TODO: add to cart
-            Toast.makeText(requireContext(), "Add to cart ${it.title}", Toast.LENGTH_SHORT).show()
+            viewModel.addToCart(it)
+            Toast.makeText(requireContext(), "Added to cart", Toast.LENGTH_SHORT).show()
         })
 
         binding.rvProducts.apply {
