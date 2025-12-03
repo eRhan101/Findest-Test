@@ -39,6 +39,10 @@ class ProductRepositoryImpl(
             .map { entities -> entities.map { it.toDto() } }
     }
 
+    override suspend fun searchProducts(query: String): Flow<List<ProductEntity>> {
+        return productDao.searchProducts(query)
+    }
+
     private fun ProductDto.toEntity(): ProductEntity {
         return ProductEntity(
             id = this.id,

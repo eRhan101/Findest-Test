@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
+
 class HomeViewModel(
     private val productRepository: ProductRepository,
     private val cartRepository: CartRepository
@@ -51,14 +52,11 @@ class HomeViewModel(
                         UiState.Error(e.message ?: "Failed to Load Products", throwable = e)
                 }
                 .collect {
-
                     if (it.isEmpty()) {
                         android.util.Log.e("HomeViewModel", "success but empty")
-
                         _productState.value = UiState.Success(emptyList())
                     } else {
                         android.util.Log.e("HomeViewModel", "success")
-
                         _productState.value = UiState.Success(it)
                     }
                 }
@@ -107,6 +105,43 @@ class HomeViewModel(
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
-        // TO DO
+        if (query.isBlank()) {
+            loadProducts(currentCategory)
+        } else {
+            performSearch(query)
+        }
+    }
+
+    private fun performSearch(query: String) {
+        viewModelScope.launch {
+            _productState.value = UiState.Loading
+
+            productRepository.searchProducts(query)
+                .catch { e ->
+                    _productState.value = UiState.Error(e.message ?: "Search Failed", e)
+                }
+                .collect {
+                    if (it.isEmpty()) {
+                        _productState.value = UiState.Success(emptyList())
+                    } else {
+                        val dtos = it.map { entity ->
+                            ProductDto(
+                                id = entity.id,
+                                title = entity.title,
+                                price = entity.price,
+                                description = entity.description,
+                                category = entity.category,
+                                image = entity.image,
+                                rating = com.example.findesttest.data.model.RatingDto(
+                                    rate = entity.ratingRate,
+                                    count = entity.ratingCount
+                                )
+                            )
+                        }
+
+                        _productState.value = UiState.Success(dtos)
+                    }
+                }
+        }
     }
 }

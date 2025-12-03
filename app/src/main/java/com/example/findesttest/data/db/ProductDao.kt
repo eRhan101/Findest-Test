@@ -26,4 +26,7 @@ interface ProductDao {
 
     @Query("SELECT DISTINCT category FROM products ORDER BY category ASC")
     fun getUniqueCategories(): Flow<List<String>>
+
+    @Query("SELECT * FROM products WHERE title LIKE '%' || :query || '%'")
+    fun searchProducts(query: String): Flow<List<ProductEntity>>
 }

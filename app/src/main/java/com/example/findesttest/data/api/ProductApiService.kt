@@ -4,7 +4,7 @@ import com.example.findesttest.data.model.ProductDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-interface ProductApiService {
+interface   ProductApiService {
     @GET("products")
     suspend fun getProducts(): List<ProductDto>
     @GET("products/{id}")

@@ -2,6 +2,7 @@ package com.example.findesttest.ui.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -11,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.findesttest.R
 import com.example.findesttest.databinding.FragmentHomeBinding
 import com.example.findesttest.utils.UiState
 import com.google.android.material.chip.Chip
@@ -36,6 +38,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+        setupToolbar()
         observeObjects()
     }
 
@@ -117,11 +120,59 @@ class HomeFragment : Fragment() {
                 isClickable = true
 
                 setOnClickListener {
+                    val searchItem = binding.toolbarHome.menu.findItem(R.id.search)
+                    if (searchItem.isActionViewExpanded){
+                        searchItem.collapseActionView()
+                    }
                     viewModel.onCategorySelected(category)
                 }
             }
             binding.chipCategories.addView(chip)
 
+        }
+    }
+
+    private fun setupToolbar() {
+
+        val searchItem = binding.toolbarHome.menu.findItem(R.id.search)
+        val searchView = searchItem.actionView as androidx.appcompat.widget.SearchView
+
+        searchView.queryHint = "Search products..."
+
+        searchView.setOnQueryTextListener(object :
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText.isNullOrEmpty()) {
+                    viewModel.onSearchQueryChanged("")
+                } else {
+                    binding.chipCategories.clearCheck()
+                }
+                return true
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                binding.chipCategories.clearCheck()
+                viewModel.onSearchQueryChanged(query.orEmpty())
+                searchView.clearFocus()
+                return true
+            }
+        })
+
+        searchItem.setOnActionExpandListener(object : android.view.MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
+                viewModel.onSearchQueryChanged("")
+                return true
+            }
+
+            override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
+                binding.chipCategories.clearCheck()
+                return true
+            }
+        })
+
+        searchView.setOnCloseListener {
+            viewModel.onSearchQueryChanged("")
+            false
         }
     }
 
