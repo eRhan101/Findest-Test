@@ -1,18 +1,13 @@
 package com.example.findesttest.data.repository
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import com.example.findesttest.data.api.ProductApiService
 import com.example.findesttest.data.db.ProductDao
 import com.example.findesttest.data.db.ProductEntity
 import com.example.findesttest.data.model.ProductDto
 import com.example.findesttest.data.model.RatingDto
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -21,35 +16,34 @@ class ProductRepositoryImpl @Inject constructor(
     private val productDao: ProductDao
 ) : ProductRepository {
 
-    override suspend fun getProducts(): Flow<List<ProductDto>> {
-        return channelFlow {
-            launch (Dispatchers.IO) {
+    override suspend fun getProducts(): LiveData<List<ProductDto>> {
+            withContext (Dispatchers.IO) {
                 saveApiDataToDb()
             }
 
-            productDao.getAllProducts()
-                .map { entities -> entities.map {
-                    it.toDto()
-                }}.collectLatest { send(it) }
-        }
+
+            return productDao.getAllProducts().map {
+                entities -> entities.map { it.toDto() }
+            }
+
     }
 
-    override suspend fun getProductsbyId(id: Int): Flow<ProductDto> {
+    override suspend fun getProductsbyId(id: Int): LiveData<ProductDto> {
         return productDao.getProductById(id)
             .map { entity -> entity?.toDto()!! }
     }
 
-    override suspend fun getCategories(): Flow<List<String>> {
+    override suspend fun getCategories(): LiveData<List<String>> {
         return productDao.getUniqueCategories()
     }
 
-    override suspend fun getProductbyCategory(category: String): Flow<List<ProductDto>> {
+    override suspend fun getProductbyCategory(category: String): LiveData<List<ProductDto>> {
         return productDao.getProductsByCategory(category)
             .map { entities -> entities.map { it.toDto() } }
     }
 
-    override suspend fun searchProducts(query: String): Flow<List<ProductEntity>> {
-        return productDao.searchProducts(query)
+    override suspend fun searchProducts(query: String): LiveData<List<ProductDto>> {
+        return productDao.searchProducts(query).map { entities -> entities.map { it.toDto() } }
     }
 
     private fun ProductDto.toEntity(): ProductEntity {

@@ -1,24 +1,26 @@
 package com.example.findesttest.ui.cart
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.findesttest.data.db.CartEntity
 import com.example.findesttest.data.repository.CartRepository
 import com.example.findesttest.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CartViewModel @Inject constructor(private val cartRepository: CartRepository) : ViewModel() {
-    private val _cartState = MutableStateFlow<UiState<List<CartEntity>>>(UiState.Loading)
-    val cartState: StateFlow<UiState<List<CartEntity>>> = _cartState
 
-    private val _totalPrice = MutableStateFlow(0.0)
-    val totalPrice: StateFlow<Double> = _totalPrice
+    private var currentProductSource: LiveData<List<CartEntity>>? = null
+
+    private val _cartState = MediatorLiveData<UiState<List<CartEntity>>>(UiState.Loading)
+    val cartState: LiveData<UiState<List<CartEntity>>> = _cartState
+
+    private val _totalPrice = MediatorLiveData(0.0)
+    val totalPrice: LiveData<Double> = _totalPrice
 
     init {
         loadCartItems()
@@ -26,14 +28,20 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
 
     private fun loadCartItems() {
         viewModelScope.launch {
-            cartRepository.getCartItems()
-                .catch { e ->
-                    _cartState.value = UiState.Error(e.message ?: "Error loadingg cart", e)
-                }
-                .collect {
+            currentProductSource?.let { _cartState.removeSource(it) }
+
+            _cartState.value = UiState.Loading
+
+            try {
+                val source = cartRepository.getCartItems()
+                currentProductSource = source
+                _cartState.addSource(source){
                     _cartState.value = UiState.Success(it)
                     calculateTotal(it)
                 }
+            } catch (e: Exception) {
+                _cartState.value = UiState.Error(e.message ?: "Error loading cart", e)
+            }
         }
     }
 

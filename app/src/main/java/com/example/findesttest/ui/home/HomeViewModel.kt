@@ -1,5 +1,7 @@
 package com.example.findesttest.ui.home
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.findesttest.data.model.ProductDto
@@ -7,9 +9,6 @@ import com.example.findesttest.data.repository.CartRepository
 import com.example.findesttest.data.repository.ProductRepository
 import com.example.findesttest.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,20 +19,22 @@ class HomeViewModel @Inject constructor(
     private val cartRepository: CartRepository
 ) : ViewModel() {
 
-    private val _productState = MutableStateFlow<UiState<List<ProductDto>>>(UiState.Loading)
-    val productState: StateFlow<UiState<List<ProductDto>>> = _productState
+    private var currentProductSource: LiveData<List<ProductDto>>? = null
 
-    private val _addToCartState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
-    val addToCartState: StateFlow<UiState<Boolean>> = _addToCartState
+    private val _productState = MediatorLiveData<UiState<List<ProductDto>>>(UiState.Loading)
+    val productState: LiveData<UiState<List<ProductDto>>> = _productState
 
-    private val _categoriesState = MutableStateFlow<UiState<List<String>>>(UiState.Loading)
-    val categoriesState: StateFlow<UiState<List<String>>> = _categoriesState
+    private val _addToCartState = MediatorLiveData<UiState<Boolean>>(UiState.Loading)
+    val addToCartState: LiveData<UiState<Boolean>> = _addToCartState
+
+    private val _categoriesState = MediatorLiveData<UiState<List<String>>>(UiState.Loading)
+    val categoriesState: LiveData<UiState<List<String>>> = _categoriesState
     private var currentCategory: String? = null
 
-    private val _selectedCategory = MutableStateFlow<String?>(null)
+    private val _selectedCategory = MediatorLiveData<String?>(null)
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery
+    private val _searchQuery = MediatorLiveData("")
+    val searchQuery: LiveData<String> = _searchQuery
 
     init {
         loadProducts()
@@ -42,42 +43,49 @@ class HomeViewModel @Inject constructor(
 
     private fun loadProducts(category: String? = null) {
         viewModelScope.launch {
+            currentProductSource?.let { _productState.removeSource(it) }
+
             _productState.value = UiState.Loading
-            val products = if (category.isNullOrEmpty()) {
-                productRepository.getProducts()
-            } else {
-                productRepository.getProductbyCategory(category)
-            }
-            products
-                .catch { e ->
-                    android.util.Log.e("HomeViewModel", "Error loading products", e)
-                    _productState.value =
-                        UiState.Error(e.message ?: "Failed to Load Products", throwable = e)
+
+            try {
+                val source: LiveData<List<ProductDto>> = if (category.isNullOrEmpty()) {
+                    productRepository.getProducts()
+                } else {
+                    productRepository.getProductbyCategory(category)
                 }
-                .collect {
+
+                currentProductSource = source
+
+                _productState.addSource(source) {
                     if (it.isEmpty()) {
-                        android.util.Log.e("HomeViewModel", "success but empty")
+                        android.util.Log.e("HomeViewModel", "Success but empty")
                         _productState.value = UiState.Success(emptyList())
                     } else {
-                        android.util.Log.e("HomeViewModel", "success")
+                        android.util.Log.e("HomeViewModel", "Success")
                         _productState.value = UiState.Success(it)
                     }
                 }
+
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Error loading products", e)
+                _productState.value =
+                    UiState.Error(e.message ?: "Failed to Load Products", throwable = e)
+            }
         }
     }
 
     private fun loadCategories() {
         viewModelScope.launch {
             _categoriesState.value = UiState.Loading
-            val categories = productRepository.getCategories()
-            categories
-                .catch { e ->
-                    _categoriesState.value =
-                        UiState.Error(e.message ?: "Failed to Load Categories", throwable = e)
-                }
-                .collect {
+            try {
+                val source = productRepository.getCategories()
+                _categoriesState.addSource(source) {
                     _categoriesState.value = UiState.Success(it)
                 }
+            } catch (e: Exception) {
+                _categoriesState.value =
+                    UiState.Error(e.message ?: "Failed to Load Categories", throwable = e)
+            }
         }
     }
 
@@ -117,34 +125,19 @@ class HomeViewModel @Inject constructor(
 
     private fun performSearch(query: String) {
         viewModelScope.launch {
+            currentProductSource?.let { _productState.removeSource(it) }
+
             _productState.value = UiState.Loading
 
-            productRepository.searchProducts(query)
-                .catch { e ->
-                    _productState.value = UiState.Error(e.message ?: "Search Failed", e)
+            try {
+                val source = productRepository.searchProducts(query)
+                currentProductSource = source
+                _productState.addSource(source) {
+                    _productState.value = UiState.Success(it)
                 }
-                .collect {
-                    if (it.isEmpty()) {
-                        _productState.value = UiState.Success(emptyList())
-                    } else {
-                        val dtos = it.map { entity ->
-                            ProductDto(
-                                id = entity.id,
-                                title = entity.title,
-                                price = entity.price,
-                                description = entity.description,
-                                category = entity.category,
-                                image = entity.image,
-                                rating = com.example.findesttest.data.model.RatingDto(
-                                    rate = entity.ratingRate,
-                                    count = entity.ratingCount
-                                )
-                            )
-                        }
-
-                        _productState.value = UiState.Success(dtos)
-                    }
-                }
+            } catch (e: Exception) {
+                _productState.value = UiState.Error(e.message ?: "Search Failed", e)
+            }
         }
     }
 }

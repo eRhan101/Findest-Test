@@ -1,19 +1,19 @@
 package com.example.findesttest.data.repository
 
+import androidx.lifecycle.LiveData
 import com.example.findesttest.data.db.CartDao
 import com.example.findesttest.data.db.CartEntity
 import com.example.findesttest.data.model.ProductDto
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class CartRepositoryImpl @Inject constructor(private val cartDao: CartDao): CartRepository {
-    override fun getCartItems(): Flow<List<CartEntity>> {
+    override fun getCartItems(): LiveData<List<CartEntity>> {
         return cartDao.getCartItems()
     }
 
     override suspend fun addToCart(product: ProductDto) {
-        val existingItem = cartDao.getCartItemById(product.id).first()
+
+        val existingItem = cartDao.getCartItemByIdSync(product.id)
 
         if (existingItem != null){
             val updatedItem = existingItem.copy(quantity = existingItem.quantity+1)
@@ -33,7 +33,7 @@ class CartRepositoryImpl @Inject constructor(private val cartDao: CartDao): Cart
 
     override suspend fun updateQuantity(id: Int, newQuantity: Int) {
         if (newQuantity>0){
-            val item = cartDao.getCartItemById(id).first()
+            val item = cartDao.getCartItemByIdSync(id)
             item?.let {
                 cartDao.insertCartItem(it.copy(quantity = newQuantity))
             }

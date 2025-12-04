@@ -1,5 +1,6 @@
 package com.example.findesttest.data.repository
 
+import androidx.lifecycle.LiveData
 import com.example.findesttest.data.db.OrderDao
 import com.example.findesttest.data.db.OrderEntity
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +17,7 @@ class OrderRepositoryImpl @Inject constructor(private val orderDao: OrderDao): O
     }
 
 
-    override fun getAllOrders(): Flow<List<OrderEntity>> {
+    override fun getAllOrders(): LiveData<List<OrderEntity>> {
         return orderDao.getAllOrders()
     }
 

@@ -7,14 +7,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.findesttest.R
 import com.example.findesttest.databinding.FragmentCheckoutBinding
 import com.example.findesttest.utils.UiState
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CheckoutFragment : Fragment() {
@@ -55,25 +53,18 @@ class CheckoutFragment : Fragment() {
     }
 
     private fun observeData() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.cartItems.collect { items ->
-                adapter.submitList(items)
-            }
+        viewModel.cartItems.observe(viewLifecycleOwner) {
+            adapter.submitList(it)
         }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.totalPrice.collect { total ->
-                binding.tvTotalPrice.text = String.format("$%.2f", total)
-            }
+        viewModel.totalPrice.observe(viewLifecycleOwner) {
+            binding.tvTotalPrice.text = String.format("$%.2f", it)
         }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.orderState.collect { state ->
-                if (state is UiState.Success && state.data) {
-                    Toast.makeText(context, "Order Placed Successfully!", Toast.LENGTH_LONG).show()
-                    findNavController().navigate(R.id.action_checkoutFragment_to_nav_home)
-                }
+        viewModel.orderState.observe(viewLifecycleOwner) { state ->
+            if (state is UiState.Success && state.data) {
+                Toast.makeText(context, "Order Placed Successfully!", Toast.LENGTH_LONG).show()
+                findNavController().navigate(R.id.action_checkoutFragment_to_nav_home)
             }
+
         }
     }
 

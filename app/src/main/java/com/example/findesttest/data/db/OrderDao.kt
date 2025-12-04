@@ -1,10 +1,10 @@
 package com.example.findesttest.data.db
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface OrderDao {
@@ -12,6 +12,6 @@ interface OrderDao {
     suspend fun insertOrder(order: OrderEntity)
 
     @Query("SELECT * FROM orders ORDER BY id DESC")
-    fun getAllOrders(): Flow<List<OrderEntity>>
+    fun getAllOrders(): LiveData<List<OrderEntity>>
 
 }
