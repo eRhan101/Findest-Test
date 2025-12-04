@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.androidx.navigation.safeargs)
+    alias(libs.plugins.hilt.android)
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
@@ -60,12 +61,12 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging)
-    implementation(libs.koin.android)
     implementation(libs.coroutines.android)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.coil)
-
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 }

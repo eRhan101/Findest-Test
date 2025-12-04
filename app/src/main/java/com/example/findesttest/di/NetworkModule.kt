@@ -4,34 +4,53 @@ import com.example.findesttest.data.api.ApiConstants
 import com.example.findesttest.data.api.ProductApiService
 import com.example.findesttest.data.repository.ProductRepository
 import com.example.findesttest.data.repository.ProductRepositoryImpl
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
 
-val networkModule = module {
-    single {
-        HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+
+    @Module
+    @InstallIn(SingletonComponent::class)
+    object NetworkModule {
+        @Provides
+        @Singleton
+        fun provideLogginnterceptor():
+                HttpLoggingInterceptor {
+            return HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level
+                    .BODY
+            }
+        }
+
+        @Provides
+        @Singleton
+        fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+            return OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build()
+        }
+
+        @Provides
+        @Singleton
+        fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+            return Retrofit.Builder()
+                .baseUrl(ApiConstants.BASE_URL)
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        }
+
+        @Provides
+        @Singleton
+        fun provideProductApiService(retrofit: Retrofit): ProductApiService {
+            return retrofit.create(
+                ProductApiService::class.java
+            )
         }
     }
-    single {
-        OkHttpClient.Builder()
-            .addInterceptor(get<HttpLoggingInterceptor>())
-            .build()
-    }
-    single {
-        Retrofit.Builder()
-            .baseUrl(ApiConstants.BASE_URL)
-            .client(get())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-    single<ProductApiService> {
-        get<Retrofit>().create(ProductApiService::class.java)
-    }
-    single<ProductRepository> {
-        ProductRepositoryImpl(get(), get())
-    }
-}

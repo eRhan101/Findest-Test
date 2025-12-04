@@ -6,13 +6,16 @@ import com.example.findesttest.data.model.ProductDto
 import com.example.findesttest.data.repository.CartRepository
 import com.example.findesttest.data.repository.ProductRepository
 import com.example.findesttest.utils.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val productRepository: ProductRepository,
     private val cartRepository: CartRepository
 ) : ViewModel() {

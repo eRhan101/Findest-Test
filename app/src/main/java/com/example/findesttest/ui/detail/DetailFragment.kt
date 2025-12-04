@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -14,12 +15,13 @@ import androidx.navigation.fragment.navArgs
 import coil.load
 import com.example.findesttest.databinding.FragmentDetailBinding
 import com.example.findesttest.utils.UiState
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
+@AndroidEntryPoint
 class DetailFragment : Fragment() {
 
-    private val viewModel: DetailViewModel by viewModel()
+    private val viewModel: DetailViewModel by viewModels()
 
     private val args: DetailFragmentArgs by navArgs()
 

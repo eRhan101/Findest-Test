@@ -3,8 +3,9 @@ package com.example.findesttest.data.repository
 import com.example.findesttest.data.db.OrderDao
 import com.example.findesttest.data.db.OrderEntity
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class OrderRepositoryImpl(private val orderDao: OrderDao): OrderRepository {
+class OrderRepositoryImpl @Inject constructor(private val orderDao: OrderDao): OrderRepository {
     override suspend fun saveOrder(items: String, totalPrice: Double, images: String) {
         val order = OrderEntity(
             items = items,

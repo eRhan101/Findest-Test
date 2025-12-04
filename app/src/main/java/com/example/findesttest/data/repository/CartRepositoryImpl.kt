@@ -5,8 +5,9 @@ import com.example.findesttest.data.db.CartEntity
 import com.example.findesttest.data.model.ProductDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 
-class CartRepositoryImpl(private val cartDao: CartDao): CartRepository {
+class CartRepositoryImpl @Inject constructor(private val cartDao: CartDao): CartRepository {
     override fun getCartItems(): Flow<List<CartEntity>> {
         return cartDao.getCartItems()
     }

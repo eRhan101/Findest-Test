@@ -5,14 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.findesttest.data.repository.CartRepository
 import com.example.findesttest.data.repository.OrderRepository
 import com.example.findesttest.utils.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CheckoutViewModel(
+@HiltViewModel
+class CheckoutViewModel @Inject constructor(
     private val cartRepository: CartRepository,
     private val orderRepository: OrderRepository
 ) : ViewModel() {

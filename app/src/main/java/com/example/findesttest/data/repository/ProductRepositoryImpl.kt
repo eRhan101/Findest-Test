@@ -7,22 +7,31 @@ import com.example.findesttest.data.model.ProductDto
 import com.example.findesttest.data.model.RatingDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class ProductRepositoryImpl(
+class ProductRepositoryImpl @Inject constructor(
     private val apiService: ProductApiService,
     private val productDao: ProductDao
 ) : ProductRepository {
 
     override suspend fun getProducts(): Flow<List<ProductDto>> {
-        return productDao.getAllProducts()
-            .map { entities -> entities.map { it.toDto() } }
-            .onStart {
+        return channelFlow {
+            launch (Dispatchers.IO) {
                 saveApiDataToDb()
             }
+
+            productDao.getAllProducts()
+                .map { entities -> entities.map {
+                    it.toDto()
+                }}.collectLatest { send(it) }
+        }
     }
 
     override suspend fun getProductsbyId(id: Int): Flow<ProductDto> {

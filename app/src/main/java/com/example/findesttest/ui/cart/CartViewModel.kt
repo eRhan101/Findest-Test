@@ -5,12 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.findesttest.data.db.CartEntity
 import com.example.findesttest.data.repository.CartRepository
 import com.example.findesttest.utils.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
+@HiltViewModel
+class CartViewModel @Inject constructor(private val cartRepository: CartRepository) : ViewModel() {
     private val _cartState = MutableStateFlow<UiState<List<CartEntity>>>(UiState.Loading)
     val cartState: StateFlow<UiState<List<CartEntity>>> = _cartState
 

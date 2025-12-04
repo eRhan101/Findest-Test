@@ -1,42 +1,41 @@
 package com.example.findesttest.di
 
+import android.content.Context
 import androidx.room.Room
 import com.example.findesttest.data.db.AppDataBase
-import com.example.findesttest.data.repository.CartRepository
-import com.example.findesttest.data.repository.CartRepositoryImpl
-import com.example.findesttest.data.repository.OrderRepository
-import com.example.findesttest.data.repository.OrderRepositoryImpl
-import com.example.findesttest.data.repository.ProductRepository
-import com.example.findesttest.data.repository.ProductRepositoryImpl
-import org.koin.android.ext.koin.androidContext
-import org.koin.dsl.module
+import com.example.findesttest.data.db.CartDao
+import com.example.findesttest.data.db.OrderDao
+import com.example.findesttest.data.db.ProductDao
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
-val databaseModule = module {
-    single {
-        Room.databaseBuilder(
-            androidContext(),
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+
+    @Provides
+    @Singleton
+    fun provideDataBase(
+        @ApplicationContext context: Context
+    ): AppDataBase {
+        return Room.databaseBuilder(
+            context,
             AppDataBase::class.java,
             "marketplace_db"
         ).fallbackToDestructiveMigration()
             .build()
     }
-    single {
-        get<AppDataBase>().productDao()
-    }
-    single<ProductRepository>{
-        ProductRepositoryImpl(get(), get())
-    }
 
-    single {
-        get<AppDataBase>().cartDao()
-    }
-    single<CartRepository> {
-        CartRepositoryImpl(get())
-    }
-    single {
-        get<AppDataBase>().orderDao()
-    }
-    single<OrderRepository> {
-        OrderRepositoryImpl(get())
-    }
+    @Provides
+    fun provideProductDao(db: AppDataBase): ProductDao = db.productDao()
+
+    @Provides
+    fun provideOrderDao(db: AppDataBase): OrderDao = db.orderDao()
+
+    @Provides
+    fun provideCartDaoo(db: AppDataBase): CartDao = db.cartDao()
 }
