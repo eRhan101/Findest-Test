@@ -11,7 +11,7 @@ interface OrderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrder(order: OrderEntity)
 
-    @Query("SELECT * FROM orders ORDER BY id DESC")
-    fun getAllOrders(): LiveData<List<OrderEntity>>
+    @Query("SELECT * FROM orders WHERE userId = :userId ORDER BY id DESC")
+    fun getAllOrders(userId: Int): LiveData<List<OrderEntity>>
 
 }

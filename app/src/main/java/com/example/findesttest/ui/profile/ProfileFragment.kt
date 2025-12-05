@@ -40,7 +40,20 @@ class ProfileFragment : Fragment() {
         }
 
         binding.btnLogout.setOnClickListener {
-            Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
+            viewModel.logout()
+            findNavController().navigate(
+                R.id.loginFragment,
+                null,
+                androidx.navigation.NavOptions.Builder()
+                    .setPopUpTo(R.id.nav_graph, true)
+                    .build())
+        }
+
+        viewModel.userProfile.observe(viewLifecycleOwner) {user ->
+            if (user != null) {
+                binding.tvUserName.text = user.username
+                binding.tvUserEmail.text = user.email
+            }
         }
     }
 

@@ -1,56 +1,49 @@
 package com.example.findesttest.ui.cart
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.example.findesttest.data.db.CartEntity
 import com.example.findesttest.data.repository.CartRepository
+import com.example.findesttest.utils.SessionManager
 import com.example.findesttest.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CartViewModel @Inject constructor(private val cartRepository: CartRepository) : ViewModel() {
+class CartViewModel @Inject constructor(
+    private val cartRepository: CartRepository,
+    private val sessionManager: SessionManager
+) : ViewModel() {
 
-    private var currentProductSource: LiveData<List<CartEntity>>? = null
+    private val _currentUserId = MutableLiveData<Int>()
 
-    private val _cartState = MediatorLiveData<UiState<List<CartEntity>>>(UiState.Loading)
-    val cartState: LiveData<UiState<List<CartEntity>>> = _cartState
+    private val _cartItemsSource: LiveData<List<CartEntity>> = _currentUserId.switchMap { userId ->
+        cartRepository.getCartItems()
+    }
 
-    private val _totalPrice = MediatorLiveData(0.0)
-    val totalPrice: LiveData<Double> = _totalPrice
+    val cartState: LiveData<UiState<List<CartEntity>>> = _cartItemsSource.map { items ->
+        if (items.isEmpty()) {
+            UiState.Success(emptyList())
+        } else {
+            UiState.Success(items)
+        }
+    }
+
+    val totalPrice: LiveData<Double> = _cartItemsSource.map { items ->
+        items.sumOf { it.price * it.quantity }
+    }
 
     init {
-        loadCartItems()
+        refreshCart()
     }
 
-    private fun loadCartItems() {
-        viewModelScope.launch {
-            currentProductSource?.let { _cartState.removeSource(it) }
-
-            _cartState.value = UiState.Loading
-
-            try {
-                val source = cartRepository.getCartItems()
-                currentProductSource = source
-                _cartState.addSource(source){
-                    _cartState.value = UiState.Success(it)
-                    calculateTotal(it)
-                }
-            } catch (e: Exception) {
-                _cartState.value = UiState.Error(e.message ?: "Error loading cart", e)
-            }
-        }
-    }
-
-    private fun calculateTotal(items: List<CartEntity>) {
-        var total = 0.0
-        for (item in items) {
-            total += item.price * item.quantity
-        }
-        _totalPrice.value = total
+    fun refreshCart() {
+        _currentUserId.value = sessionManager.getUserId()
     }
 
     fun increaseQuantity(item: CartEntity) {
@@ -69,7 +62,7 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
         }
     }
 
-    fun deleteItem(item: CartEntity){
+    fun deleteItem(item: CartEntity) {
         viewModelScope.launch {
             cartRepository.removeFromCart(item)
         }

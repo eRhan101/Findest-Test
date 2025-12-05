@@ -3,13 +3,11 @@ package com.example.findesttest.data.db
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "orders")
-data class OrderEntity(
+@Entity(tableName = "users")
+data class UserEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val userId:Int,
-    val items: String,
-    val totalPrice: Double,
-    val images: String
-
+    val username: String,
+    val password: String,
+    val email: String
 )

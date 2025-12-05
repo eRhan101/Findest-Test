@@ -89,6 +89,10 @@ class DetailFragment : Fragment() {
                     binding.btnAddToCart.visibility = View.GONE
                 }
 
+                else -> {
+
+                }
+
             }
         }
     }

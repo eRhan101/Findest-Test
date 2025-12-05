@@ -6,6 +6,7 @@ import com.example.findesttest.data.db.AppDataBase
 import com.example.findesttest.data.db.CartDao
 import com.example.findesttest.data.db.OrderDao
 import com.example.findesttest.data.db.ProductDao
+import com.example.findesttest.data.db.UserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,4 +39,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCartDaoo(db: AppDataBase): CartDao = db.cartDao()
+
+    @Provides
+    fun provideUserDao(db: AppDataBase): UserDao = db.userDao()
 }

@@ -80,6 +80,10 @@ class HomeFragment : Fragment() {
                     binding.tvError.text = state.message
                 }
 
+                else -> {
+
+                }
+
             }
 
         }
@@ -95,6 +99,9 @@ class HomeFragment : Fragment() {
                 }
 
                 is UiState.Error -> {
+                }
+                else ->{
+
                 }
             }
         }

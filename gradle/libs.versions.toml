@@ -22,6 +22,8 @@ navigationFragmentKtx = "2.8.3"
 navigationUiKtx = "2.8.3"
 coil = "2.6.0"
 hilt="2.48"
+annotation = "1.9.1"
+coreSplashscreen = "1.0.1"
 
 
 [libraries]
@@ -49,6 +51,8 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

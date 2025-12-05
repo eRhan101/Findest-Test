@@ -12,12 +12,14 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FindestTest"
+        android:theme="@style/Theme.MyApp.Starting"
         tools:targetApi="31"
         android:name="com.example.findesttest.MyApp">
         <activity
             android:exported="true"
-            android:name="com.example.findesttest.MainActivity">
+            android:name="com.example.findesttest.MainActivity"
+            android:theme="@style/Theme.MyApp.Starting"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

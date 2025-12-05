@@ -34,7 +34,7 @@ class CartFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        viewModel.refreshCart()
         setupRecyclerView()
         setupListeners()
         observeData()
@@ -101,11 +101,15 @@ class CartFragment : Fragment() {
                     binding.tvError.visibility = View.VISIBLE
                     binding.tvError.text = state.message
                 }
+
+                else -> {
+
+                }
             }
         }
 
-        viewModel.totalPrice.observe(viewLifecycleOwner){
-                        binding.tvTotalPrice.text = String.format("$%.2f", it)
+        viewModel.totalPrice.observe(viewLifecycleOwner) {
+            binding.tvTotalPrice.text = String.format("$%.2f", it)
         }
     }
 
